@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\BranchController;
 use App\Http\Controllers\DashboardController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -57,5 +58,12 @@ Route::middleware(['auth'])->prefix('dashboard')->name('dashboard.')->group(func
         ->name('system-analyst');
 });
 
-// Route placeholder for branch management (owned by Siyam in Sub-Feature #6)
-Route::get('/branches', fn () => response('Branch Index', 200))->name('branches.index');
+// Branch Management (Sub-Feature #6: Branch CRUD)
+Route::middleware(['auth', 'role:super-admin,branch-manager'])->group(function () {
+    Route::get('/branches', [BranchController::class, 'index'])->name('branches.index');
+    Route::get('/branches/create', [BranchController::class, 'create'])->name('branches.create');
+    Route::post('/branches', [BranchController::class, 'store'])->name('branches.store');
+    Route::get('/branches/{branch}/edit', [BranchController::class, 'edit'])->name('branches.edit');
+    Route::put('/branches/{branch}', [BranchController::class, 'update'])->name('branches.update');
+    Route::patch('/branches/{branch}/toggle-status', [BranchController::class, 'toggleStatus'])->name('branches.toggle-status');
+});
