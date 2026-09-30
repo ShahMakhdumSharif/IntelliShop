@@ -7,13 +7,32 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
-    return view('welcome');
+    return redirect()->route('dashboard');
 });
 
-// Authentication endpoints (to be expanded in Sharif's #2 User Registration & Login)
+// Authentication endpoints
 Route::get('/login', function () {
-    return response('Login page', 200);
+    if (Auth::check()) {
+        return redirect()->route('dashboard');
+    }
+    return view('auth.login');
 })->name('login');
+
+Route::post('/login', function (Request $request) {
+    $credentials = $request->validate([
+        'email' => ['required', 'email'],
+        'password' => ['required'],
+    ]);
+
+    if (Auth::attempt($credentials)) {
+        $request->session()->regenerate();
+        return redirect()->intended(route('dashboard'));
+    }
+
+    return back()->withErrors([
+        'email' => 'The provided credentials do not match our records.',
+    ])->onlyInput('email');
+})->name('login.post');
 
 Route::post('/logout', function (Request $request) {
     Auth::logout();
